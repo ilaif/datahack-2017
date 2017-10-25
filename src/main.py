@@ -1,6 +1,7 @@
 from models import Question, Answer, AnswerRelation
+from ilai_module import sentence_word_count, sentence_char_count
 
-folder = 'MCQ/'
+folder = '../MCQ/'
 files = ['Economics.txt', 'History_US.txt', 'Psychology.txt', 'Government.txt', 'History_World.txt', 'History_Euro.txt',
          'Marketing_testbank.txt']
 
@@ -31,5 +32,26 @@ def load_questions():
     return questions
 
 
+def extract_features(questions):
+    """
+    :type questions: Question[] 
+    :return: 
+    """
+
+    for q in questions:
+        q.question_char_count = sentence_char_count(q.question)
+        q.question_word_count = sentence_word_count(q.question)
+
+        for a in q.answers:
+            a.answer_char_count = sentence_char_count(a.answer)
+            a.answer_word_count = sentence_word_count(a.answer)
+
+
 if __name__ == '__main__':
-    print(load_questions())
+    questions = load_questions()
+    extract_features(questions)
+
+    for q in questions:
+        print(q.question_word_count)
+        print([a.answer_word_count for a in q.answers])
+        print("===")

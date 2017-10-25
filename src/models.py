@@ -4,22 +4,26 @@ class Question(object):
         self.category = category
         self.answers = []
         self.correct_answer_idx = None
+        self.answersGraph = {}
+
+        # Features
+        self.question_char_count = None
+        self.question_word_count = None
 
     def add_answer(self, answer, is_correct):
         self.answers.append(Answer(answer, is_correct))
+        cur_idx = len(self.answers) - 1
         if is_correct:
-            self.correct_answer_idx = len(self.answers) - 1
+            self.correct_answer_idx = cur_idx
 
-    def get_question_char_count(self):
-        return len(self.question)
-
-    def get_question_word_count(self):
-        return self.question.count(' ') + 1
+        for i in range(len(self.answers)):
+            self.answersGraph[(i, cur_idx)] = AnswerRelation()
+            self.answersGraph[(cur_idx, i)] = AnswerRelation()
 
     def get_features(self):
         return {
-            'question_char_count': self.get_question_char_count(),
-            'question_word_count': self.get_question_word_count()
+            'question_char_count': self.question_char_count,
+            'question_word_count': self.question_word_count
         }
 
     def __repr__(self):
@@ -44,6 +48,10 @@ class Answer(object):
     def __init__(self, answer, is_correct):
         self.is_correct = is_correct
         self.answer = answer
+
+        # Features
+        self.answer_char_count = None
+        self.answer_word_count = None
 
 
 class AnswerRelation(object):
