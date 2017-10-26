@@ -1,15 +1,4 @@
-import nltk
+from nltk.corpus import wordnet
+from nltk.tokenize import word_tokenize
 
-nltk.download('wordnet')
-
-from src import main
-
-questions = main.load_questions(folder_path='./MCQ/')
-
-chars = set()
-for q in questions:
-    chars.update({c for c in q.text})
-    for a in q.answers:
-        chars.update({c for c in a.text})
-
-print(chars)
+print(word_tokenize('change.'))

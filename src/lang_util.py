@@ -1,7 +1,6 @@
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords, wordnet
 import collections
-import pickle
 import operator
 
 stopwords_set = set(stopwords.words('english'))
@@ -46,6 +45,10 @@ def remove_sentence_stopwords(s):
     return [w for w in words if w not in stopwords_set]
 
 
+def sentence_words(s):
+    return [w for w in word_tokenize(s) if len(w) > 1]
+
+
 # TESTED
 def clean_sentence(s):
     """
@@ -70,8 +73,8 @@ def connect_by_synonyms(s1, s2):
     s1 = clean_sentence(s1)
     s2 = clean_sentence(s2)
 
-    w1 = s1.split(" ")
-    w2 = s2.split(" ")
+    w1 = sentence_words(s1)
+    w2 = sentence_words(s2)
     count = 0
     for w in w1:
         syn = set()
@@ -92,8 +95,8 @@ def connect_by_same_words(s1, s2):
     s1 = clean_sentence(s1)
     s2 = clean_sentence(s2)
 
-    w1 = s1.split(" ")
-    w2 = s2.split(" ")
+    w1 = sentence_words(s1)
+    w2 = sentence_words(s2)
     return set(w1) & set(w2)
 
 
@@ -104,8 +107,8 @@ def check_similarity_between_sentences(s1, s2):
     s1 = clean_sentence(s1)
     s2 = clean_sentence(s2)
 
-    w1 = set(s1.split(" "))
-    w2 = set(s2.split(" "))
+    w1 = set(sentence_words(s1))
+    w2 = set(sentence_words(s2))
 
     D = collections.defaultdict()
 
@@ -135,9 +138,11 @@ def similarity_score_between_sentences(s1, s2, word_frequencies):
         for w2 in words_2:
             tmp_1 = wordnet.synsets(w1)
             tmp_2 = wordnet.synsets(w2)
-            ret.append(tmp_1[0].path_similarity(tmp_2[0]))
+            if len(tmp_1) > 0 and len(tmp_2) > 0:
+                similarity = tmp_1[0].path_similarity(tmp_2[0])
+                ret.append(0 if similarity is None else similarity)
 
-    return max(ret)
+    return 0 if len(ret) == 0 else max(ret)
 
 
 # TESTED
@@ -151,9 +156,13 @@ def find_most_infrequent_words(s, word_frequencies, n_words=3):
     """
     D = collections.defaultdict()
     s = clean_sentence(s)
-    words = s.split(" ")
+    words = sentence_words(s)
     for word in words:
         D[word] = word_frequencies.get(word, 0)
 
-    D = dict(sorted(D.iteritems(), key=operator.itemgetter(1), reverse=False)[:n_words])
-    return D.keys()
+    return dict(sorted(D.iteritems(), key=operator.itemgetter(1), reverse=False)[:n_words]).keys()
+
+
+# NOT TESTED
+def count_titles(s):
+    return len([w for w in sentence_words(s) if w.istitle()])

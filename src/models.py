@@ -22,6 +22,7 @@ class Question(object):
         self.is_completion = None  # Whether has __ in the sentence
         self.is_question = None  # Whether "ends" with '?'
         self.average_frequency = None
+        self.title_count = None
 
     def add_answer(self, answer, is_correct):
         self.answers.append(Answer(answer, is_correct))
@@ -29,10 +30,21 @@ class Question(object):
         if is_correct:
             self.correct_answer_idx = cur_idx
 
-        for i in range(len(self.answers)):
-            self.answersGraph[(i, cur_idx)] = AnswerRelation()
-            self.answersGraph[(cur_idx, i)] = AnswerRelation()
+    def process_answers(self):
+        # Make correct answer first
+        if self.correct_answer_idx != 0:
+            tmp = self.answers[0]
+            self.answers[0] = self.answers[self.correct_answer_idx]
+            self.answers[self.correct_answer_idx] = tmp
 
+        # Build answers graph
+        for i in range(len(self.answers)):
+            for j in range(i + 1, len(self.answers)):
+                ar = AnswerRelation(from_idx=i, to_idx=j)
+                self.answersGraph[(i, j)] = ar
+                self.answersGraph[(j, i)] = ar
+
+        # Set num answers
         self.num_answers = len(self.answers)
 
     def get_raw_attributes(self):
@@ -40,7 +52,7 @@ class Question(object):
 
     def get_features(self):
         features_list = ['num_answers', 'char_count', 'word_count', 'stopword_count', 'without_stopword_count',
-                         'is_completion', 'is_question', 'average_frequency']
+                         'is_completion', 'is_question', 'average_frequency', 'title_count']
         return build_attributes_dict(self, features_list, 'q_')
 
     def __repr__(self):
@@ -76,17 +88,30 @@ class Answer(object):
         self.certainty_count = None
         self.all_or_none = None
         self.average_frequency = None
+        self.similarity_with_question = None
+        self.title_count = None
 
-    def get_raw_attributes(self):
-        return {'a_text': self.text, 'a_is_correct': self.is_correct}
+    def get_raw_attributes(self, idx):
+        return {'a_%s_text' % idx: self.text, 'a_%s_is_correct' % idx: self.is_correct}
 
     def get_features(self, idx):
         features_list = ['char_count', 'word_count', 'stopword_count', 'without_stopword_count',
                          'common_words_with_question_count', 'common_synonyms_with_question_count', 'certainty_count',
-                         'all_or_none', 'average_frequency']
+                         'all_or_none', 'average_frequency', 'similarity_with_question', 'title_count']
         return build_attributes_dict(self, features_list, 'a_%s_' % idx)
 
 
 class AnswerRelation(object):
-    def __init__(self):
-        pass
+    def __init__(self, from_idx, to_idx):
+        self.from_idx = from_idx
+        self.to_idx = to_idx
+
+        self.similarity = None
+        self.synonyms_count = None
+
+    def get_raw_attributes(self):
+        return {}  # TODO:
+
+    def get_features(self):
+        features_list = ['similarity', 'synonyms_count']
+        return build_attributes_dict(self, features_list, 'ar_%s_%s_' % (self.from_idx, self.to_idx))
