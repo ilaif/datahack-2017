@@ -14,8 +14,14 @@ import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 FOLDER_PATH = '../MCQ/'
+FOLDER_PATH_2 = '../MCQ2/'
 files = ['Economics.txt', 'History_US.txt', 'Psychology.txt', 'Government.txt', 'History_World.txt', 'History_Euro.txt',
          'Marketing_testbank.txt']
+
+files_2 = ['animals', 'brain-teasers', 'celebrities', 'entertainment', 'for-kids', 'general', 'geography',\
+  'history', 'hobbies', 'humanities', 'literature', 'movies', 'music', 'newest', 'people', 'rated',\
+  'religion-faith', 'science-technology', 'sports', 'television', 'video-games', 'world']
+
 freq_list, min_freq = pickle.load(file(dir_path + '/../data/freq_list.pickle', 'rb'))
 
 
@@ -59,6 +65,52 @@ def load_questions(folder_path=None):
 
     return questions
 
+
+def load_questions_from_open_trivia(folder_path=None):
+    if folder_path is None:
+        folder_path = FOLDER_PATH_2
+
+    questions = []
+    for f_name in files_2:
+        category = f_name
+        path = folder_path + f_name
+        with open(path) as f:
+            c = f.read().replace('\r\n\r\n', '\n\n').replace('\r\n', '\n').lstrip('\n').split('\n\n')
+
+        question_raw = [q.split('\n') for q in c]
+        for q in question_raw:
+            if len(q[2:]) != 4:  # question, then correct, then answers. Remove questions that have != 4 answers
+                continue
+
+            q = [l for l in q if l != '']
+            # TODO: Remove duplicate answers
+            if len(q) < 1:
+                # Print here to see what we dismissed
+                continue
+
+            if not q[0].startswith('#Q '):
+                continue
+            q0_no_hashtag = q[0].split(' ', 1)[1]
+            question = Question(question=sanitize_string(q0_no_hashtag), category=category)
+            correct_answer = q[1].split(' ', 1)[1]
+            count_correct = 0
+            for a in q[2:]:
+                answer = a.split(' ', 1)[1]
+                is_correct = (answer == correct_answer)
+                if is_correct:
+                    count_correct += 1
+                question.add_answer(sanitize_string(answer), is_correct)
+            if count_correct == 1:
+                questions.append(question)
+            else:
+                print question
+
+    return questions
+
+
+lq = load_questions_from_open_trivia(FOLDER_PATH_2)
+print len(lq)
+print lq[0]
 
 def extract_features(questions):
     """
