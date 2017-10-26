@@ -1,3 +1,10 @@
+def build_features_dict(obj, features_list, prefix):
+    features = {}
+    for feature_name in features_list:
+        features[prefix + feature_name] = getattr(obj, feature_name)
+    return features
+
+
 class Question(object):
     def __init__(self, question, category):
         self.text = question
@@ -11,6 +18,8 @@ class Question(object):
         self.word_count = None
         self.stopword_count = None
         self.without_stopword_count = None
+        self.is_completion = None  # Whether has __ in the sentence
+        self.is_question = None  # Whether "ends" with '?'
 
     def add_answer(self, answer, is_correct):
         self.answers.append(Answer(answer, is_correct))
@@ -23,10 +32,9 @@ class Question(object):
             self.answersGraph[(cur_idx, i)] = AnswerRelation()
 
     def get_features(self):
-        return {
-            'question_char_count': self.char_count,
-            'question_word_count': self.word_count
-        }
+        features_list = ['char_count', 'word_count', 'stopword_count', 'without_stopword_count', 'is_completion',
+                         'is_question']
+        return build_features_dict(self, features_list, 'q_')
 
     def __repr__(self):
         answers_repr = ''
@@ -58,6 +66,11 @@ class Answer(object):
         self.without_stopword_count = None
         self.common_words_with_question_count = None
         self.common_synonyms_with_question_count = None
+
+    def get_features(self, idx):
+        features_list = ['char_count', 'word_count', 'stopword_count', 'without_stopword_count',
+                         'common_words_with_question_count', 'common_synonyms_with_question_count']
+        return build_features_dict(self, features_list, 'a_%s_' % idx)
 
 
 class AnswerRelation(object):

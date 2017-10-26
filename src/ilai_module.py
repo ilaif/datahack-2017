@@ -28,6 +28,5 @@ def is_completion_sentence(s):
     return '__' in s
 
 
-def is_question_sentence(s):
-    return '?' in s
-    # TODO: End of line ?
+def is_question_sentence(s, chars_from_end=5):
+    return '?' in s[:(-1 * chars_from_end)]

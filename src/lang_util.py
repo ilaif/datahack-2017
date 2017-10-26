@@ -27,7 +27,7 @@ special_chars_replacer = {
 
 
 def sanitize_string(s):
-    s_l = list(s)
+    s_l = list(s.strip())
     for i, c in enumerate(s_l):
         if c in special_chars_replacer:
             s_l[i] = special_chars_replacer[c]

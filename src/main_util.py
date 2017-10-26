@@ -1,6 +1,7 @@
 from tqdm import tqdm
+import pandas as pd
 from ilai_module import sentence_word_count, sentence_char_count, sentence_stopwords_count, \
-    sentence_without_stopwords_count
+    sentence_without_stopwords_count, is_completion_sentence, is_question_sentence
 from gal_module import common_words_in_answer_and_question_count, common_synonyms_in_answer_and_question_count
 
 from models import Question, Answer, AnswerRelation
@@ -51,6 +52,8 @@ def extract_features(questions):
         q.word_count = sentence_word_count(q.text)
         q.stopword_count = sentence_stopwords_count(q.text)
         q.without_stopword_count = sentence_without_stopwords_count(q.text)
+        q.is_completion = is_completion_sentence(q.text)
+        q.is_question = is_question_sentence(q.text)
 
         for a in q.answers:
             a.char_count = sentence_char_count(a.text)
@@ -59,3 +62,13 @@ def extract_features(questions):
             a.without_stopword_count = sentence_without_stopwords_count(a.text)
             a.common_words_with_question_count = common_words_in_answer_and_question_count(q.text, a.text)
             a.common_synonyms_with_question_count = common_synonyms_in_answer_and_question_count(q.text, a.text)
+
+
+def build_df(questions):
+    l = []
+    for q in questions:
+        record = q.get_features()
+        for i, a in enumerate(q.answers):
+            record.update(a.get_features(i))
+        l.append(record)
+    return pd.DataFrame(l)

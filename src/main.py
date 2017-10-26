@@ -1,10 +1,11 @@
-from main_util import load_questions, extract_features
+from main_util import load_questions, extract_features, build_df
 
 if __name__ == '__main__':
     print('Loading questions..')
     questions = load_questions()
     print('Extracting features..')
     extract_features(questions)
+    print('Build df')
+    pd = build_df(questions)
 
-    for q in questions[:50]:
-        print([a.common_synonyms_with_question_count for a in q.answers])
+    print(pd)
