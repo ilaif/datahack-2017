@@ -1,15 +1,15 @@
 import unittest
 
-from models import Question
+from models import Question, Answer
 
 
 class TesQuestionModel(unittest.TestCase):
     def test_check_swaps(self):
         q = Question('Question', 'Category')
-        q.add_answer('Answer 1', False)
-        q.add_answer('Answer 2', False)
-        q.add_answer('Answer 3', True)
-        q.add_answer('Answer 4', False)
+        q.add_answer(Answer('Answer 1', False))
+        q.add_answer(Answer('Answer 2', False))
+        q.add_answer(Answer('Answer 3', True))
+        q.add_answer(Answer('Answer 4', False))
         ag = q.answersGraph
         ag[(0, 1)].similarity = '0,1'
         ag[(0, 2)].similarity = '0,2'

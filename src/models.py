@@ -25,10 +25,10 @@ class Question(object):
         self.average_frequency = None
         self.title_count = None
 
-    def add_answer(self, answer, is_correct):
-        self.answers.append(Answer(answer, is_correct))
+    def add_answer(self, answer):
+        self.answers.append(answer)
         cur_idx = len(self.answers) - 1
-        if is_correct:
+        if answer.is_correct:
             self.correct_answer_idx = cur_idx
             self.original_correct_answer_idx = cur_idx
         for i in range(len(self.answers) - 1):
@@ -73,7 +73,7 @@ class Question(object):
     def get_features(self):
         return build_attributes_dict(self, self.get_features_list(), 'q_')
 
-    # def __repr__(self):
+        # def __repr__(self):
         #     answers_repr = ''
         #     for i, a in enumerate(self.answers):
         #         answer = a.text
@@ -109,14 +109,18 @@ class Answer(object):
         self.similarity_with_question = None
         self.title_count = None
 
-    def get_raw_attributes(self, idx):
-        return {'a_%s_text' % idx: self.text, 'a_%s_is_correct' % idx: self.is_correct}
+    def get_raw_attributes(self, idx=''):
+        if idx is not '':
+            idx = '%s_' % idx
+        return {'a_%stext' % idx: self.text, 'a_%sis_correct' % idx: self.is_correct}
 
-    def get_features(self, idx):
+    def get_features(self, idx=''):
+        if idx is not '':
+            idx = '%s_' % idx
         features_list = ['char_count', 'word_count', 'stopword_count', 'without_stopword_count',
                          'common_words_with_question_count', 'common_synonyms_with_question_count', 'certainty_count',
                          'all_or_none', 'average_frequency', 'similarity_with_question', 'title_count']
-        return build_attributes_dict(self, features_list, 'a_%s_' % idx)
+        return build_attributes_dict(self, features_list, 'a_%s' % idx)
 
 
 class AnswerRelation(object):
