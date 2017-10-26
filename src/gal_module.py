@@ -1,7 +1,11 @@
 """ FEATURES """
 
-from lang_util import connect_by_same_words, connect_by_synonyms
-
+from lang_util import connect_by_same_words, connect_by_synonyms, clean_sentence, similarity_score_between_sentences
+import collections
+import operator
+from nltk.corpus import wordnet
+import pickle
+D = pickle.load(open('../data/freq_list.pickle', 'r'))[0]
 
 # TESTED
 def common_words_in_answer_and_question_count(q_text, a_text):
@@ -22,10 +26,17 @@ def common_words_in_answers_and_answers(q):
     return ret
 
 
-def similarity_score_between_sentences():
-    pass
+# TESTED
+def similarity_question_and_answer(q_text, a_text, D):
+    return similarity_score_between_sentences(q_text, a_text, D)
+
+
 
 # TEST
 # print connect_by_synonyms("big kid", "heavy child")
 # print connect_by_same_words("small kid minor", "little big child kid")
 # print clean_sentence("the brown fox jumped over the wall")
+
+# print find_most_infrequent_words("increase interest rates and investment", D)
+
+print similarity_score_between_sentences("Inflation reduction has the lowest cost when the efforts are", "credible so that the sacrifice ratio is low", D)

@@ -1,6 +1,8 @@
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords, wordnet
 import collections
+import pickle
+import operator
 
 stopwords_set = set(stopwords.words('english'))
 special_chars_replacer = {
@@ -114,3 +116,44 @@ def check_similarity_between_sentences(s1, s2):
             D[(s[0], t[0])] = t[0].path_similarity(s[0])
 
     return D
+
+
+# TESTED
+def similarity_score_between_sentences(s1, s2, word_frequencies):
+    """
+    finds the maximum similarity between top infrequent words in each sentces
+    :param s1:
+    :param s2:
+    :param word_frequencies:
+    :return:
+    """
+    words_1 = find_most_infrequent_words(s1, word_frequencies)
+    words_2 = find_most_infrequent_words(s2, word_frequencies)
+    ret = []
+
+    for w1 in words_1:
+        for w2 in words_2:
+            tmp_1 = wordnet.synsets(w1)
+            tmp_2 = wordnet.synsets(w2)
+            ret.append(tmp_1[0].path_similarity(tmp_2[0]))
+
+    return max(ret)
+
+
+# TESTED
+def find_most_infrequent_words(s, word_frequencies, n_words=3):
+    """
+    finds the most n_words infrequent words in the sentence
+    :param s:
+    :param word_frequencies:
+    :param n_words:
+    :return:
+    """
+    D = collections.defaultdict()
+    s = clean_sentence(s)
+    words = s.split(" ")
+    for word in words:
+        D[word] = word_frequencies.get(word, 0)
+
+    D = dict(sorted(D.iteritems(), key=operator.itemgetter(1), reverse=False)[:n_words])
+    return D.keys()
