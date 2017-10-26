@@ -73,22 +73,22 @@ class Question(object):
     def get_features(self):
         return build_attributes_dict(self, self.get_features_list(), 'q_')
 
-    def __repr__(self):
-        answers_repr = ''
-        for i, a in enumerate(self.answers):
-            answer = a.text
-            if self.correct_answer_idx == i:
-                answers_repr += '*('
-            if len(answer) > 10:
-                answer = answer[:10] + '..'
-            else:
-                answer = answer[:10]
-            answers_repr += answer
-            if self.correct_answer_idx == i:
-                answers_repr += ')*)'
-            if i < len(self.answers) - 1:
-                answers_repr += ', '
-        return 'Q(%s), A[%s]' % (self.text[:15] + '..', answers_repr)
+    # def __repr__(self):
+        #     answers_repr = ''
+        #     for i, a in enumerate(self.answers):
+        #         answer = a.text
+        #         if self.correct_answer_idx == i:
+        #             answers_repr += '*('
+        #         if len(answer) > 10:
+        #             answer = answer[:10] + '..'
+        #         else:
+        #             answer = answer[:10]
+        #         answers_repr += answer
+        #         if self.correct_answer_idx == i:
+        #             answers_repr += ')*)'
+        #         if i < len(self.answers) - 1:
+        #             answers_repr += ', '
+        #     return 'Q(%s), A[%s]' % (self.text[:15] + '..', answers_repr)
 
 
 class Answer(object):

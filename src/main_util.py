@@ -177,16 +177,23 @@ def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True
     return x_train, x_test
 
 
-def build_df(questions):
+def build_df(questions, include_metadata=True):
     l = []
     for q in questions:
-        record = q.get_raw_attributes()
+        record = {}
+        if include_metadata:
+            record.update(q.get_raw_attributes())
         record.update(q.get_features())
         for i, a in enumerate(q.answers):
-            record.update(a.get_raw_attributes(i))
+            if include_metadata:
+                record.update(a.get_raw_attributes(i))
             record.update(a.get_features(i))
         for i in range(q.num_answers):
             for j in range(i + 1, q.num_answers):
                 record.update(q.answersGraph[(i, j)].get_features())
         l.append(record)
     return pd.DataFrame(l)
+
+
+def flatten_list_of_lists(l):
+    return [item for sublist in l for item in sublist]
