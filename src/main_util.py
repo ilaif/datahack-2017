@@ -150,11 +150,11 @@ def extract_features(questions):
                                                                       q.answers[j].text)
 
 
-def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True, swap_multiply_test=True):
+def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True, swap_multiply_test=True, random_state=42):
     x_train, x_test, y_train, y_test = train_test_split(questions,
                                                         [0] * len(questions),
                                                         test_size=(1 - train_ratio),
-                                                        random_state=42)
+                                                        random_state=random_state)
 
     if make_correct_answer_first:
         for q in x_train:
