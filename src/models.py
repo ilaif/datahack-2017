@@ -30,11 +30,21 @@ class Question(object):
         if is_correct:
             self.correct_answer_idx = cur_idx
 
-        for i in range(len(self.answers)):
-            ar = AnswerRelation(from_idx=i, to_idx=cur_idx)
-            self.answersGraph[(i, cur_idx)] = ar
-            self.answersGraph[(cur_idx, i)] = ar
+    def process_answers(self):
+        # Make correct answer first
+        if self.correct_answer_idx != 0:
+            tmp = self.answers[0]
+            self.answers[0] = self.answers[self.correct_answer_idx]
+            self.answers[self.correct_answer_idx] = tmp
 
+        # Build answers graph
+        for i in range(len(self.answers)):
+            for j in range(i + 1, len(self.answers)):
+                ar = AnswerRelation(from_idx=i, to_idx=j)
+                self.answersGraph[(i, j)] = ar
+                self.answersGraph[(j, i)] = ar
+
+        # Set num answers
         self.num_answers = len(self.answers)
 
     def get_raw_attributes(self):

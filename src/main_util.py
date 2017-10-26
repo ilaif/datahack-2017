@@ -18,9 +18,9 @@ FOLDER_PATH_2 = '../MCQ2/'
 files = ['Economics.txt', 'History_US.txt', 'Psychology.txt', 'Government.txt', 'History_World.txt', 'History_Euro.txt',
          'Marketing_testbank.txt']
 
-files_2 = ['animals', 'brain-teasers', 'celebrities', 'entertainment', 'for-kids', 'general', 'geography',\
-  'history', 'hobbies', 'humanities', 'literature', 'movies', 'music', 'newest', 'people', 'rated',\
-  'religion-faith', 'science-technology', 'sports', 'television', 'video-games', 'world']
+files_2 = ['animals', 'brain-teasers', 'celebrities', 'entertainment', 'for-kids', 'general', 'geography', \
+           'history', 'hobbies', 'humanities', 'literature', 'movies', 'music', 'newest', 'people', 'rated', \
+           'religion-faith', 'science-technology', 'sports', 'television', 'video-games', 'world']
 
 freq_list, min_freq = pickle.load(file(dir_path + '/../data/freq_list.pickle', 'rb'))
 
@@ -45,6 +45,8 @@ def load_questions_string(s, category):
             is_correct, answer = a.split(' ', 1)
             is_correct = (is_correct == '1')
             question.add_answer(sanitize_string(answer), is_correct)
+        question.process_answers()
+
         questions.append(question)
 
     return questions
@@ -56,7 +58,6 @@ def load_questions(folder_path=None):
 
     questions = []
     for f_name in files:
-        questions = []
         category = f_name.replace('.txt', '')
         path = folder_path + f_name
         with open(path) as f:
@@ -107,10 +108,6 @@ def load_questions_from_open_trivia(folder_path=None):
 
     return questions
 
-
-lq = load_questions_from_open_trivia(FOLDER_PATH_2)
-print len(lq)
-print lq[0]
 
 def extract_features(questions):
     """
