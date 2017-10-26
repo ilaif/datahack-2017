@@ -21,6 +21,10 @@ def common_words_in_answers_and_answers(q):
             ret.append(connect_by_same_words(q.answers[i].text, q.answers[j].text))
     return ret
 
+
+def similarity_score_between_sentences():
+    pass
+
 # TEST
 # print connect_by_synonyms("big kid", "heavy child")
 # print connect_by_same_words("small kid minor", "little big child kid")
