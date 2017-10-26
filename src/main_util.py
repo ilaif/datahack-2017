@@ -137,6 +137,7 @@ def extract_features(questions):
             a.certainty_count = sentence_certainty_count(a.text)
             a.all_or_none = all_or_none_tag(a.text)
             a.average_frequency = average_frequency(a.text, freq_list=freq_list, min_freq=min_freq)
+            a.similarity_with_question = similarity_between_two_sentences(a.text, q.text, freq_list=freq_list)
             a.title_count = count_titles(a.text)
 
         for i in range(q.num_answers):
