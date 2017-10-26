@@ -11,6 +11,7 @@ class Question(object):
         self.category = category
         self.answers = []
         self.correct_answer_idx = None
+        self.original_correct_answer_idx = None
         self.answersGraph = {}
 
         # Features
@@ -29,31 +30,48 @@ class Question(object):
         cur_idx = len(self.answers) - 1
         if is_correct:
             self.correct_answer_idx = cur_idx
-
-    def process_answers(self):
-        # Make correct answer first
-        if self.correct_answer_idx != 0:
-            tmp = self.answers[0]
-            self.answers[0] = self.answers[self.correct_answer_idx]
-            self.answers[self.correct_answer_idx] = tmp
-
-        # Build answers graph
-        for i in range(len(self.answers)):
-            for j in range(i + 1, len(self.answers)):
-                ar = AnswerRelation(from_idx=i, to_idx=j)
-                self.answersGraph[(i, j)] = ar
-                self.answersGraph[(j, i)] = ar
-
-        # Set num answers
+            self.original_correct_answer_idx = cur_idx
+        for i in range(len(self.answers) - 1):
+            ar = AnswerRelation(from_idx=i, to_idx=cur_idx)
+            self.answersGraph[(i, cur_idx)] = ar
         self.num_answers = len(self.answers)
+
+    def swap_answers(self, i, j):
+        if i == j:
+            return
+
+        tmp = self.answers[i]
+        self.answers[i] = self.answers[j]
+        self.answers[j] = tmp
+
+        # Swap translation dict
+        trans_d = {x: x for x in range(self.num_answers)}
+        trans_d[i] = j
+        trans_d[j] = i
+
+        d = {}
+        ag = self.answersGraph
+
+        for k in range(self.num_answers):
+            for m in range(k + 1, self.num_answers):
+                new_key = tuple(sorted([trans_d[k], trans_d[m]]))
+                d[new_key] = ag[(k, m)]
+                ag[(k, m)].from_idx = new_key[0]
+                ag[(k, m)].to_idx = new_key[1]
+
+        self.answersGraph = d
+        self.correct_answer_idx = trans_d[self.correct_answer_idx]
 
     def get_raw_attributes(self):
         return {'q_text': self.text, 'q_category': self.category, 'q_correct_answer_idx': self.correct_answer_idx}
 
+    @staticmethod
+    def get_features_list():
+        return ['num_answers', 'char_count', 'word_count', 'stopword_count', 'without_stopword_count',
+                'is_completion', 'is_question', 'average_frequency', 'title_count']
+
     def get_features(self):
-        features_list = ['num_answers', 'char_count', 'word_count', 'stopword_count', 'without_stopword_count',
-                         'is_completion', 'is_question', 'average_frequency', 'title_count']
-        return build_attributes_dict(self, features_list, 'q_')
+        return build_attributes_dict(self, self.get_features_list(), 'q_')
 
     def __repr__(self):
         answers_repr = ''

@@ -1,6 +1,10 @@
 import pickle
 from tqdm import tqdm
 import pandas as pd
+from sklearn.model_selection import train_test_split
+import os
+import copy
+
 from ilai_module import sentence_word_count, sentence_char_count, sentence_stopwords_count, \
     sentence_without_stopwords_count, is_completion_sentence, is_question_sentence, count_titles
 from gal_module import common_words_in_answer_and_question_count, common_synonyms_between_sentences, \
@@ -9,7 +13,6 @@ from guy_module import sentence_certainty_count, all_or_none_tag, average_freque
 
 from models import Question, Answer, AnswerRelation
 from lang_util import sanitize_string
-import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -45,7 +48,6 @@ def load_questions_string(s, category):
             is_correct, answer = a.split(' ', 1)
             is_correct = (is_correct == '1')
             question.add_answer(sanitize_string(answer), is_correct)
-        question.process_answers()
 
         questions.append(question)
 
@@ -145,6 +147,33 @@ def extract_features(questions):
                                                                  freq_list=freq_list)
                 ar.synonyms_count = common_synonyms_between_sentences(q.answers[i].text,
                                                                       q.answers[j].text)
+
+
+def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True, swap_multiply_test=True):
+    x_train, x_test, y_train, y_test = train_test_split(questions,
+                                                        [0] * len(questions),
+                                                        test_size=(1 - train_ratio),
+                                                        random_state=42)
+
+    if make_correct_answer_first:
+        for q in x_train:
+            q.swap_answers(q.correct_answer_idx, 0)
+
+    def shift_question(q):
+        new_q = copy.deepcopy(q)
+        for i in xrange(q.num_answers - 1):
+            new_q.swap_answers(i, i + 1)
+        return new_q
+
+    if swap_multiply_test:
+        for i, q in enumerate(x_test):
+            copied_questions = [q]
+            for j in xrange(1, q.num_answers):
+                copied_questions.append(shift_question(copied_questions[-1]))
+            copied_questions = sorted(copied_questions, key=lambda cq: cq.correct_answer_idx)
+            x_test[i] = copied_questions
+
+    return x_train, x_test
 
 
 def build_df(questions):
