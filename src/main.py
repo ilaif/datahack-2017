@@ -4,7 +4,7 @@ from lang_utils import sanitize_string
 from ilai_module import sentence_word_count, sentence_char_count, sentence_stopwords_count, \
     sentence_without_stopwords_count
 
-FOLDER_PATH = '../MCQ/'
+FOLDER_PATH = 'MCQ/'
 files = ['Economics.txt', 'History_US.txt', 'Psychology.txt', 'Government.txt', 'History_World.txt', 'History_Euro.txt',
          'Marketing_testbank.txt']
 
