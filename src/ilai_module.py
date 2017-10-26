@@ -1,7 +1,4 @@
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
-
-from lang_util import sentence_stopwords, remove_sentence_stopwords
+from lang_util import sentence_stopwords, remove_sentence_stopwords, sentence_words
 
 
 # TESTED
@@ -30,3 +27,7 @@ def is_completion_sentence(s):
 
 def is_question_sentence(s, chars_from_end=5):
     return '?' in s[:(-1 * chars_from_end)]
+
+
+def count_titles(s):
+    return len([w for w in sentence_words(s) if w.istitle()])
