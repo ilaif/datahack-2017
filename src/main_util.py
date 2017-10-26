@@ -31,6 +31,7 @@ def load_questions(folder_path=None):
     questions = []
     for f_name in files:
 
+
         category = f_name.replace('.txt', '')
         path = folder_path + f_name
         with open(path) as f:
@@ -40,7 +41,7 @@ def load_questions(folder_path=None):
         for q in question_raw:
 
             if len(q[1:]) != 4:  # Remove questions that have != 4 answers
-                print(q)
+                #print(q)
                 continue
 
             q = [l for l in q if l != '']
