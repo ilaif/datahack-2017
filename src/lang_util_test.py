@@ -1,5 +1,5 @@
 import unittest
-import lang_utils
+import lang_util
 
 
 class LangUtilsTest(unittest.TestCase):

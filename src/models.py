@@ -56,6 +56,8 @@ class Answer(object):
         self.word_count = None
         self.stopword_count = None
         self.without_stopword_count = None
+        self.common_words_with_question_count = None
+        self.common_synonyms_with_question_count = None
 
 
 class AnswerRelation(object):

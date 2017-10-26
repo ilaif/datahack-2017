@@ -1,3 +1,7 @@
+import nltk
+
+nltk.download('wordnet')
+
 from src import main
 
 questions = main.load_questions(folder_path='./MCQ/')
