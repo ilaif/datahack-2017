@@ -46,8 +46,8 @@ def load_questions_string(s, category):
         question = Question(question=sanitize_string(q[0]), category=category)
         for a in q[1:]:
             is_correct, answer = a.split(' ', 1)
-            is_correct = (is_correct == '1')
-            question.add_answer(sanitize_string(answer), is_correct)
+            is_correct = (is_correct.strip() == '1')
+            question.add_answer(Answer(sanitize_string(answer), is_correct))
 
         questions.append(question)
 
@@ -102,7 +102,7 @@ def load_questions_from_open_trivia(folder_path=None):
                 is_correct = (answer == correct_answer)
                 if is_correct:
                     count_correct += 1
-                question.add_answer(sanitize_string(answer), is_correct)
+                question.add_answer(Answer(sanitize_string(answer), is_correct))
             if count_correct == 1:
                 questions.append(question)
             else:
@@ -150,7 +150,9 @@ def extract_features(questions):
                                                                       q.answers[j].text)
 
 
-def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True, swap_multiply_test=True, random_state=42):
+def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True, swap_multiply_test=True,
+                     random_state=42, question_answer_pairs=False):
+
     x_train, x_test, y_train, y_test = train_test_split(questions,
                                                         [0] * len(questions),
                                                         test_size=(1 - train_ratio),
@@ -173,8 +175,40 @@ def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True
                 copied_questions.append(shift_question(copied_questions[-1]))
             copied_questions = sorted(copied_questions, key=lambda cq: cq.correct_answer_idx)
             x_test[i] = copied_questions
+    elif question_answer_pairs:
+        for i, q in enumerate(x_test):
+            copied_questions = []
+            for a in q.answers:
+                question = copy.deepcopy(q)
+                question.answers = []
+                question.answersGraph = {}
+                question.add_answer(a)
+                copied_questions.append(question)
+            x_test[i] = copied_questions
 
     return x_train, x_test
+
+
+def build_question_answer_dict(q, a, include_metadata=True):
+    record = {}
+    if include_metadata:
+        record.update(q.get_raw_attributes())
+    record.update(q.get_features())
+    if include_metadata:
+        record.update(a.get_raw_attributes(idx=''))
+    record.update(a.get_features(idx=''))
+    record['label'] = a.is_correct
+    return record
+
+
+def build_question_answer_df(questions, include_metadata=True):
+    l = []
+    for question in questions:
+        for m in xrange(question.num_answers):
+            q = copy.deepcopy(question)
+            for i, a in enumerate(q.answers):
+                l.append(build_question_answer_dict(q, a, include_metadata=include_metadata))
+    return pd.DataFrame(l)
 
 
 def build_df(questions, include_metadata=True):
