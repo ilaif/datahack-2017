@@ -1,15 +1,21 @@
+import pickle
 from tqdm import tqdm
 import pandas as pd
 from ilai_module import sentence_word_count, sentence_char_count, sentence_stopwords_count, \
     sentence_without_stopwords_count, is_completion_sentence, is_question_sentence
 from gal_module import common_words_in_answer_and_question_count, common_synonyms_in_answer_and_question_count
+from guy_module import sentence_certainty_count, all_or_none_tag, average_frequency
 
 from models import Question, Answer, AnswerRelation
 from lang_util import sanitize_string
+import os
+
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 FOLDER_PATH = '../MCQ/'
 files = ['Economics.txt', 'History_US.txt', 'Psychology.txt', 'Government.txt', 'History_World.txt', 'History_Euro.txt',
          'Marketing_testbank.txt']
+freq_list, min_freq = pickle.load(file(dir_path + '/../data/freq_list.pickle', 'rb'))
 
 
 def load_questions(folder_path=None):
@@ -26,6 +32,11 @@ def load_questions(folder_path=None):
 
         question_raw = [q.split('\n') for q in c]
         for q in question_raw:
+
+            if len(q[1:]) != 4:  # Remove questions that have != 4 answers
+                print(q)
+                continue
+
             q = [l for l in q if l != '']
             # TODO: Remove duplicate answers
             if len(q) < 1:
@@ -54,6 +65,7 @@ def extract_features(questions):
         q.without_stopword_count = sentence_without_stopwords_count(q.text)
         q.is_completion = is_completion_sentence(q.text)
         q.is_question = is_question_sentence(q.text)
+        q.average_frequency = average_frequency(q.text, freq_list=freq_list, min_freq=min_freq)
 
         for a in q.answers:
             a.char_count = sentence_char_count(a.text)
@@ -62,13 +74,18 @@ def extract_features(questions):
             a.without_stopword_count = sentence_without_stopwords_count(a.text)
             a.common_words_with_question_count = common_words_in_answer_and_question_count(q.text, a.text)
             a.common_synonyms_with_question_count = common_synonyms_in_answer_and_question_count(q.text, a.text)
+            a.certainty_count = sentence_certainty_count(a.text)
+            a.all_or_none = all_or_none_tag(a.text)
+            a.average_frequency = average_frequency(a.text, freq_list=freq_list, min_freq=min_freq)
 
 
 def build_df(questions):
     l = []
     for q in questions:
-        record = q.get_features()
+        record = q.get_raw_attributes()
+        record.update(q.get_features())
         for i, a in enumerate(q.answers):
+            record.update(a.get_raw_attributes())
             record.update(a.get_features(i))
         l.append(record)
     return pd.DataFrame(l)

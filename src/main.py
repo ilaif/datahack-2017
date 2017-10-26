@@ -5,7 +5,8 @@ if __name__ == '__main__':
     questions = load_questions()
     print('Extracting features..')
     extract_features(questions)
-    print('Build df')
+    print('Building df..')
     pd = build_df(questions)
+    print('Done')
 
     print(pd)

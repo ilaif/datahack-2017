@@ -1,4 +1,4 @@
-def build_features_dict(obj, features_list, prefix):
+def build_attributes_dict(obj, features_list, prefix):
     features = {}
     for feature_name in features_list:
         features[prefix + feature_name] = getattr(obj, feature_name)
@@ -14,12 +14,14 @@ class Question(object):
         self.answersGraph = {}
 
         # Features
+        self.num_answers = None
         self.char_count = None
         self.word_count = None
         self.stopword_count = None
         self.without_stopword_count = None
         self.is_completion = None  # Whether has __ in the sentence
         self.is_question = None  # Whether "ends" with '?'
+        self.average_frequency = None
 
     def add_answer(self, answer, is_correct):
         self.answers.append(Answer(answer, is_correct))
@@ -31,10 +33,15 @@ class Question(object):
             self.answersGraph[(i, cur_idx)] = AnswerRelation()
             self.answersGraph[(cur_idx, i)] = AnswerRelation()
 
+        self.num_answers = len(self.answers)
+
+    def get_raw_attributes(self):
+        return {'q_text': self.text, 'q_category': self.category, 'q_correct_answer_idx': self.correct_answer_idx}
+
     def get_features(self):
-        features_list = ['char_count', 'word_count', 'stopword_count', 'without_stopword_count', 'is_completion',
-                         'is_question']
-        return build_features_dict(self, features_list, 'q_')
+        features_list = ['num_answers', 'char_count', 'word_count', 'stopword_count', 'without_stopword_count',
+                         'is_completion', 'is_question', 'average_frequency']
+        return build_attributes_dict(self, features_list, 'q_')
 
     def __repr__(self):
         answers_repr = ''
@@ -66,11 +73,18 @@ class Answer(object):
         self.without_stopword_count = None
         self.common_words_with_question_count = None
         self.common_synonyms_with_question_count = None
+        self.certainty_count = None
+        self.all_or_none = None
+        self.average_frequency = None
+
+    def get_raw_attributes(self):
+        return {'a_text': self.text, 'a_is_correct': self.is_correct}
 
     def get_features(self, idx):
         features_list = ['char_count', 'word_count', 'stopword_count', 'without_stopword_count',
-                         'common_words_with_question_count', 'common_synonyms_with_question_count']
-        return build_features_dict(self, features_list, 'a_%s_' % idx)
+                         'common_words_with_question_count', 'common_synonyms_with_question_count', 'certainty_count',
+                         'all_or_none', 'average_frequency']
+        return build_attributes_dict(self, features_list, 'a_%s_' % idx)
 
 
 class AnswerRelation(object):

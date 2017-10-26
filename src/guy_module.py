@@ -1,5 +1,5 @@
 from nltk.tokenize import word_tokenize
-from lang_utils import remove_sentence_stopwords
+from lang_util import remove_sentence_stopwords
 import math
 import pickle
 
@@ -8,11 +8,12 @@ def log2(x):
     return math.log(x, 2)
 
 
-CERTAIN = set(['all', 'always', 'every', 'just', 'only', 'never', 'none', 'must', 'certainly'])
-UNCERTAIN = set(['may', 'maybe', 'might', 'could', 'many', 'most', 'some', 'few', 'often', 'usually', 'sometimes',\
-             'probably', 'possibly', 'unlikely', 'improbable', 'doubtful'])
+CERTAIN = {'all', 'always', 'every', 'just', 'only', 'never', 'none', 'must', 'certainly'}
+UNCERTAIN = {'may', 'maybe', 'might', 'could', 'many', 'most', 'some', 'few', 'often', 'usually', 'sometimes',
+             'probably', 'possibly', 'unlikely', 'improbable', 'doubtful'}
 
 
+# IN MODEL
 def sentence_certainty_count(s):
     words = word_tokenize(s.lower())
     res = 0
@@ -24,16 +25,23 @@ def sentence_certainty_count(s):
     return res
 
 
+# IN MODEL
 def all_or_none_tag(s):
-    return 'all of the above ' in s.lower() or \
-           'none of the above ' in s.lower() or \
-            'are correct' in s.lower() or \
-            'is correct' in s.lower()
+    s = s.lower()
+    return 'all of the above ' in s or \
+           'none of the above ' in s or \
+           'are correct' in s or \
+           'is correct' in s
 
 
+# IN MODEL
 def average_frequency(s, freq_list, min_freq):
     words = remove_sentence_stopwords(s)
     words = [x for x in words if len(x) > 1]
+
+    if len(words) == 0:
+        return 0
+
     score = 0
     for w in words:
         freq = freq_list.get(w, min_freq)
@@ -49,7 +57,7 @@ def sanity_check():
     freq_list, min_freq = pickle.load(file(path, 'rb'))
 
     print freq_list["start"], log2(freq_list["start"])
-    print freq_list["bombardment"],  log2(freq_list["bombardment"])
+    print freq_list["bombardment"], log2(freq_list["bombardment"])
     print average_frequency("start", freq_list, min_freq)
     print average_frequency("start start start START", freq_list, min_freq)
     print average_frequency("bombardment", freq_list, min_freq)
@@ -60,5 +68,4 @@ def sanity_check():
     print average_frequency("start the bombardment asdfjhewkhf?", freq_list, min_freq)
     print average_frequency("asdfjhewkhf?", freq_list, min_freq)
 
-
-#sanity_check()
+    # sanity_check()
