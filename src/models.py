@@ -1,14 +1,16 @@
 class Question(object):
     def __init__(self, question, category):
-        self.question = question
+        self.text = question
         self.category = category
         self.answers = []
         self.correct_answer_idx = None
         self.answersGraph = {}
 
         # Features
-        self.question_char_count = None
-        self.question_word_count = None
+        self.char_count = None
+        self.word_count = None
+        self.stopword_count = None
+        self.without_stopword_count = None
 
     def add_answer(self, answer, is_correct):
         self.answers.append(Answer(answer, is_correct))
@@ -22,14 +24,14 @@ class Question(object):
 
     def get_features(self):
         return {
-            'question_char_count': self.question_char_count,
-            'question_word_count': self.question_word_count
+            'question_char_count': self.char_count,
+            'question_word_count': self.word_count
         }
 
     def __repr__(self):
         answers_repr = ''
         for i, a in enumerate(self.answers):
-            answer = a.answer
+            answer = a.text
             if self.correct_answer_idx == i:
                 answers_repr += '*('
             if len(answer) > 10:
@@ -41,17 +43,19 @@ class Question(object):
                 answers_repr += ')*)'
             if i < len(self.answers) - 1:
                 answers_repr += ', '
-        return 'Q(%s), A[%s]' % (self.question[:15] + '..', answers_repr)
+        return 'Q(%s), A[%s]' % (self.text[:15] + '..', answers_repr)
 
 
 class Answer(object):
     def __init__(self, answer, is_correct):
         self.is_correct = is_correct
-        self.answer = answer
+        self.text = answer
 
         # Features
-        self.answer_char_count = None
-        self.answer_word_count = None
+        self.char_count = None
+        self.word_count = None
+        self.stopword_count = None
+        self.without_stopword_count = None
 
 
 class AnswerRelation(object):
