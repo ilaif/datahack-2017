@@ -26,7 +26,7 @@ def is_completion_sentence(s):
 
 
 def is_question_sentence(s, chars_from_end=5):
-    return '?' in s[:(-1 * chars_from_end)]
+    return '?' in s[(-1 * chars_from_end):]
 
 
 def count_titles(s):

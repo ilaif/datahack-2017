@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import os
 import copy
+from multiprocessing import Pool
 
 from ilai_module import sentence_word_count, sentence_char_count, sentence_stopwords_count, \
     sentence_without_stopwords_count, is_completion_sentence, is_question_sentence, count_titles
@@ -93,6 +94,7 @@ def load_questions_from_open_trivia(folder_path=None):
 
             if not q[0].startswith('#Q '):
                 continue
+
             q0_no_hashtag = q[0].split(' ', 1)[1]
             question = Question(question=sanitize_string(q0_no_hashtag), category=category)
             correct_answer = q[1].split(' ', 1)[1]
@@ -152,7 +154,6 @@ def extract_features(questions):
 
 def split_train_test(questions, train_ratio=0.75, make_correct_answer_first=True, swap_multiply_test=True,
                      random_state=42, question_answer_pairs=False):
-
     x_train, x_test, y_train, y_test = train_test_split(questions,
                                                         [0] * len(questions),
                                                         test_size=(1 - train_ratio),
